@@ -1,0 +1,10 @@
+﻿/mongodb/**
+/redis/**
+/nginx/certificates/**
+/logs/**
+/storage/**
+.env*
+!.env*.sample
+!.gitkeep
+
+.DS_Store
