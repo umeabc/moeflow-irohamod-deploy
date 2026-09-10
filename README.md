@@ -4,7 +4,7 @@ MoeFlow 定制版（iroha10）自部署配置，基于官方 [moeflow-com/moeflo
 
 > 镜像已发布到 GitHub Container Registry（ghcr.io），由源码仓库 `umeabc/moeflow-irohamod` 构建：
 >
-> - `ghcr.io/umeabc/moeflow-backend:v1.1.8-iroha10-fix6`
+> - `ghcr.io/umeabc/moeflow-backend:v1.1.8-iroha10-fix7`
 > - `ghcr.io/umeabc/moeflow-frontend:v1.1.7-iroha10-fix`
 >
 > `docker compose up` 会自动从 ghcr.io 拉取，无需手动导入。
