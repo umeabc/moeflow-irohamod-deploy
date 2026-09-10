@@ -2,11 +2,12 @@
 
 MoeFlow 定制版（iroha10）自部署配置，基于官方 [moeflow-com/moeflow-deploy](https://github.com/moeflow-com/moeflow-deploy) 改造。
 
-> 镜像由源码仓库 `umeabc/moeflow-irohamod` 构建，tag 为：
-> - `moeflow-backend:v1.1.8-iroha10-fix4`
-> - `moeflow-frontend:v1.1.7-iroha10-fix`
+> 镜像已发布到 GitHub Container Registry（ghcr.io），由源码仓库 `umeabc/moeflow-irohamod` 构建：
 >
-> 请先将对应镜像导入部署机（`docker load -i <tar>`），再按本仓库配置启动。
+> - `ghcr.io/umeabc/moeflow-backend:v1.1.8-iroha10-fix4`
+> - `ghcr.io/umeabc/moeflow-frontend:v1.1.7-iroha10-fix`
+>
+> `docker compose up` 会自动从 ghcr.io 拉取，无需手动导入。
 
 ## 与官方部署的差异（本定制版）
 
@@ -23,17 +24,17 @@ MoeFlow 定制版（iroha10）自部署配置，基于官方 [moeflow-com/moeflo
 ## 快速开始
 
 0. 安装 [docker](https://docs.docker.com/engine/install/) 和 [docker-compose-plugin](https://docs.docker.com/compose/install/)（docker-compose-plugin v2.27.0 经测试可用）。
-1. 准备定制镜像（见上方说明）并 `docker load`。
-2. 复制环境变量模板：
+1. 复制环境变量模板：
    ```bash
    cp .env.sample .env
    cp .env-backend.sample .env-backend
    ```
-3. 编辑 `.env` / `.env-backend`，将 `CHANGE_ME` 替换为实际值（域名、MongoDB 密码、SECRET_KEY、管理员账号等）。
-4. 启动：
+2. 编辑 `.env` / `.env-backend`，将 `CHANGE_ME` 替换为实际值（域名、MongoDB 密码、SECRET_KEY、管理员账号等）。
+3. 启动（首次会自动从 ghcr.io 拉取镜像）：
    ```bash
    docker compose up -d
    ```
+   > 如需指定镜像版本，可在 docker-compose.yml 中修改 `image: ghcr.io/umeabc/moeflow-*` 的 tag 后重新 `docker compose up -d`。
 
 ## 服务拓扑
 
@@ -57,4 +58,4 @@ mongodb  (业务数据, wiredTiger 0.25GB)     ── :27017
 ## 数据与备份
 
 - 数据卷：`./mongodb/data/db`（业务数据）、`./redis`（消息队列持久化）、`./storage`（上传文件）
-- 升级/迁移：`docker save` 新镜像 → 部署机 `docker load` → `docker compose up -d` 替换 backend/frontend/celery 即可，**保留 mongodb/redis/storage 数据卷**。
+- 升级/迁移：源码仓库构建新镜像并推送 ghcr.io → 部署机修改 `docker-compose.yml` 中的镜像 tag → `docker compose pull && docker compose up -d` 替换 backend/frontend/celery 即可，**保留 mongodb/redis/storage 数据卷**。
