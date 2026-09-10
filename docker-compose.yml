@@ -32,7 +32,7 @@ services:
       start_period: 10s
 
   moeflow-backend: &backend_base
-    image: ghcr.io/umeabc/moeflow-backend:v1.1.8-iroha10-fix4
+    image: ghcr.io/umeabc/moeflow-backend:v1.1.8-iroha10-fix6
     command: gunicorn -t 120 -w 2 -b 0.0.0.0:5000 "app:create_app()"
     volumes:
       - /data/stoarge/:/app/storage
@@ -41,6 +41,7 @@ services:
       - .env-backend
     environment:
       # forward envs set in .env
+      # STORAGE_TYPE=R2 时改为 R2 公开域名，如 https://pub-<hash>.r2.dev/（见 .env-backend 注释）
       STORAGE_DOMAIN: http://${DOMAIN}/storage/
       MONGODB_URI: mongodb://${MONGODB_USER}:${MONGODB_PASS}@moeflow-mongodb:27017/moeflow?authSource=admin
       CELERY_BROKER_URL: redis://moeflow-redis:6379/0

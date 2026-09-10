@@ -4,7 +4,7 @@ MoeFlow 定制版（iroha10）自部署配置，基于官方 [moeflow-com/moeflo
 
 > 镜像已发布到 GitHub Container Registry（ghcr.io），由源码仓库 `umeabc/moeflow-irohamod` 构建：
 >
-> - `ghcr.io/umeabc/moeflow-backend:v1.1.8-iroha10-fix4`
+> - `ghcr.io/umeabc/moeflow-backend:v1.1.8-iroha10-fix6`
 > - `ghcr.io/umeabc/moeflow-frontend:v1.1.7-iroha10-fix`
 >
 > `docker compose up` 会自动从 ghcr.io 拉取，无需手动导入。
@@ -18,6 +18,7 @@ MoeFlow 定制版（iroha10）自部署配置，基于官方 [moeflow-com/moeflo
 | gunicorn worker | 4 | **2**（低内存机器友好） |
 | MongoDB | 默认 WiredTiger | **`--wiredTigerCacheSizeGB 0.25`**（限制缓存上限） |
 | Email 链路 | 有 | **已移除**（注册重构后不再发邮件） |
+| 存储 | 仅 LOCAL_STORAGE / OSS | **新增 Cloudflare R2**（`STORAGE_TYPE=R2`，S3 兼容 + 公开桶直读） |
 
 资源占用（2 核 / 2GB 测试机实测）：约 838MB → **381MB**（-55%），可用内存从 49MB 提升至 500MB+。
 
@@ -45,6 +46,26 @@ celery   (单 worker, 消费 default+output)  ── Redis broker
 redis    (消息队列, AOF 持久化)            ── :6379
 mongodb  (业务数据, wiredTiger 0.25GB)     ── :27017
 ```
+
+## Cloudflare R2 存储（可选）
+
+默认 `STORAGE_TYPE=LOCAL_STORAGE`（图片存本地磁盘）。如需改用 Cloudflare R2：
+
+1. 在 Cloudflare R2 创建 bucket，开启 **Public access**（得到 `https://pub-<hash>.r2.dev` 公网域名，或绑自定义域名）
+2. 在 R2 管理页创建 **API 令牌**（对象读/写），得到 Access Key / Secret
+3. 修改 `.env-backend`：
+   ```ini
+   STORAGE_TYPE=R2
+   STORAGE_DOMAIN=https://pub-<hash>.r2.dev/   # R2 公网域名或自定义域名
+   R2_ACCOUNT_ID=<cloudflare account id>
+   R2_ACCESS_KEY_ID=<r2 access key>
+   R2_SECRET_ACCESS_KEY=<r2 secret>
+   R2_BUCKET_NAME=<bucket 名>
+   ```
+4. `docker compose up -d` 重建 backend/celery（缩略图 cover/safe-check 会自动生成并上传 R2）
+5. 存量本地图片迁移：用 `scripts/` 下的迁移脚本（从 `/data/stoarge/files` 上传 R2），或直接复用后端容器内 boto3 逐个 `put_object`
+
+> R2 为 S3 兼容 API（boto3 接入），公开桶 URL 免签名直读，前端展示走 `https://*.r2.dev/xxx.jpg` 外链。
 
 ## 目录结构
 
