@@ -18,7 +18,7 @@ MoeFlow 定制版（iroha10）自部署配置，基于官方 [moeflow-com/moeflo
 | gunicorn worker | 4 | **2**（低内存机器友好） |
 | MongoDB | 默认 WiredTiger | **`--wiredTigerCacheSizeGB 0.25`**（限制缓存上限） |
 | Email 链路 | 有 | **已移除**（注册重构后不再发邮件） |
-| 存储 | 仅 LOCAL_STORAGE / OSS | **新增 Cloudflare R2**（`STORAGE_TYPE=R2`，S3 兼容 + 公开桶直读） |
+| 存储 | 仅 LOCAL_STORAGE / OSS | **新增 Cloudflare R2**（`STORAGE_TYPE=R2`，S3 兼容 + 公开桶直读）+ **REMOTE_HTTP**（独立 imgstore 图片存储服务，见下） |
 
 资源占用（2 核 / 2GB 测试机实测）：约 838MB → **381MB**（-55%），可用内存从 49MB 提升至 500MB+。
 
@@ -66,6 +66,26 @@ mongodb  (业务数据, wiredTiger 0.25GB)     ── :27017
 5. 存量本地图片迁移：用 `scripts/` 下的迁移脚本（从 `/data/stoarge/files` 上传 R2），或直接复用后端容器内 boto3 逐个 `put_object`
 
 > R2 为 S3 兼容 API（boto3 接入），公开桶 URL 免签名直读，前端展示走 `https://*.r2.dev/xxx.jpg` 外链。
+
+## imgstore 独立图片存储（可选，STORAGE_TYPE=REMOTE_HTTP）
+
+把图片存储落到**另一台独立主机**（轻量 imgstore 服务，Go 单二进制、镜像约 7MB），Moeflow 上传 / 从社交媒体获取的图片直接存到那台主机，外链直读。
+
+1. 在 imgstore 主机部署服务（编排见仓库 `umeabc/moeflow-irohamod-imgstore`）：
+   ```bash
+   git clone https://github.com/umeabc/moeflow-irohamod-imgstore.git
+   cd moeflow-irohamod-imgstore && cp .env.sample .env  # 改 IMGSTORE_API_KEY
+   docker compose up -d   # 数据落 ./imgstore-data（绑定映射主机磁盘）
+   ```
+2. 修改 Moeflow `.env-backend`：
+   ```ini
+   STORAGE_TYPE=REMOTE_HTTP
+   STORAGE_DOMAIN=http://<imgstore主机>:8080/files/   # 外链直读前缀
+   REMOTE_HTTP_BASE_URL=http://<imgstore主机>:8080     # 写 API 地址
+   REMOTE_HTTP_API_KEY=<与 IMGSTORE_API_KEY 相同>
+   ```
+3. `docker compose up -d` 重建 backend/celery。之后 dashboard「存储空间」卡片显示 **imgstore 总存储占用**，管理后台新增「imgstore 存储概览」页（服务 URL / 已用 / 剩余 / 总容量）。
+4. HTTPS：imgstore 前置 nginx/Caddy 反代后，把 `STORAGE_DOMAIN` 换成 `https://<域名>/files/` 即可（写 API 走 `REMOTE_HTTP_BASE_URL` 不受影响）。
 
 ## 目录结构
 
