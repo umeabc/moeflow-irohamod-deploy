@@ -32,7 +32,7 @@ services:
       start_period: 10s
 
   moeflow-backend: &backend_base
-    image: ghcr.io/umeabc/moeflow-backend:v1.1.8-iroha10-fix16
+    image: ghcr.io/umeabc/moeflow-backend:v1.1.8-iroha10-fix17
     command: gunicorn -t 120 -w 2 -b 0.0.0.0:5000 "app:create_app()"
     volumes:
       - /data/stoarge/:/app/storage
@@ -67,7 +67,7 @@ services:
     command: celery --app app.celery worker --queues default,output --hostname celery.default --loglevel=info
 
   moeflow-frontend:
-    image: ghcr.io/umeabc/moeflow-frontend:v1.1.7-iroha10-fix3
+    image: ghcr.io/umeabc/moeflow-frontend:v1.1.7-iroha10-fix17
     restart: unless-stopped
     volumes:
       - ./nginx/templates:/etc/nginx/templates
