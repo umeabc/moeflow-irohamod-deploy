@@ -1,13 +1,13 @@
 ﻿# moeflow-irohamod-deploy
 
-MoeFlow 定制版（iroha10）自部署配置，基于官方 [moeflow-com/moeflow-deploy](https://github.com/moeflow-com/moeflow-deploy) 改造。
+MoeFlow 定制版（iroha11）自部署配置，基于官方 [moeflow-com/moeflow-deploy](https://github.com/moeflow-com/moeflow-deploy) 改造。
 
 > 镜像已发布到 GitHub Container Registry（ghcr.io），由源码仓库 `umeabc/moeflow-irohamod` 构建：
 >
-> - `ghcr.io/umeabc/moeflow-backend:v1.1.8-iroha10-fix17`
-> - `ghcr.io/umeabc/moeflow-frontend:v1.1.7-iroha10-fix17`
+> - `ghcr.io/umeabc/moeflow-backend:latest`（当前版本 `v1.1.8-iroha11`）
+> - `ghcr.io/umeabc/moeflow-frontend:latest`（当前版本 `v1.1.7-iroha11`）
 >
-> `docker compose up` 会自动从 ghcr.io 拉取，无需手动导入。
+> `docker compose up` 会自动从 ghcr.io 拉取 `latest`，无需手动导入。
 
 ## 与官方部署的差异（本定制版）
 
